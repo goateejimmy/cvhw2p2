@@ -1,4 +1,5 @@
 
+
 # Modelzoo for usage 
 # Feel free to add any model you like for your final result
 # Note : Pretrained model is allowed iff it pretrained on ImageNet
@@ -77,14 +78,14 @@ class myResnet(nn.Module):
         self.layer1 = residual_block(in_channels=64)
         self.layer2 = residual_block(in_channels=128)
         self.layer3 = residual_block(in_channels=256)
-        self.expand1 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
-        self.expand2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1)
+        self.expand1 = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1))
+        self.expand2 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1))
         self.cnn1 = nn.Sequential(nn.Conv2d(in_channels=256, out_channels=128,kernel_size=3, padding=1),
                                 nn.MaxPool2d(kernel_size=2, stride=2))
-        self.fc1 = nn.Sequential(nn.Linear(2048, 1024), nn.ReLU())
-        self.fc2 = nn.Sequential(nn.Linear(1024,500), nn.ReLU())
-        self.fc2 = nn.Sequential(nn.Linear(500,84), nn.ReLU())
-        self.fc3 = nn.Linear(84,num_out)
+        self.fc1 = nn.Sequential(nn.Linear(128*16*16, 1024), nn.Dropout(0.2),nn.ReLU())
+        self.fc2 = nn.Sequential(nn.Linear(1024,500),nn.Dropout(0.2), nn.ReLU())
+        self.fc3 = nn.Sequential(nn.Linear(500,84), nn.Dropout(0.2),nn.ReLU())
+        self.fc4 = nn.Linear(84,num_out)
         
         
 
@@ -116,10 +117,12 @@ class myResnet(nn.Module):
         x = self.layer3(x)
         x = self.layer3(x)
         x = self.cnn1(x)
+        x = torch.flatten(x, start_dim=1, end_dim=-1) # b, -1
 
         x = self.fc1(x)
         x = self.fc2(x)
         x = self.fc3(x)
+        x = self.fc4(x)
         out = x
         return out
 
