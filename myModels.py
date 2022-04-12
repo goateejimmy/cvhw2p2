@@ -1,5 +1,4 @@
 
-
 # Modelzoo for usage 
 # Feel free to add any model you like for your final result
 # Note : Pretrained model is allowed iff it pretrained on ImageNet
@@ -10,6 +9,7 @@ from torchvision.models import resnet50
 
 """
 a = resnet50(pretrained=True)
+print(a)
 in_features = a.fc.in_features
 a.fc = nn.Linear(in_features, out_features=10)
 """
@@ -78,8 +78,8 @@ class myResnet(nn.Module):
         self.layer1 = residual_block(in_channels=64)
         self.layer2 = residual_block(in_channels=128)
         self.layer3 = residual_block(in_channels=256)
-        self.expand1 = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1))
-        self.expand2 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1))
+        self.expand1 = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),nn.BatchNorm2d(128),nn.ReLU())
+        self.expand2 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),nn.BatchNorm2d(256),nn.ReLU())
         self.cnn1 = nn.Sequential(nn.Conv2d(in_channels=256, out_channels=128,kernel_size=3, padding=1),
                                 nn.MaxPool2d(kernel_size=2, stride=2))
         self.fc1 = nn.Sequential(nn.Linear(128*16*16, 1024), nn.Dropout(0.2),nn.ReLU())
@@ -106,14 +106,10 @@ class myResnet(nn.Module):
         x = self.stem_conv(x)
         x = self.layer1(x)
         x = self.layer1(x)
-        x = self.layer1(x)
-        x = self.layer1(x)
         x = self.expand1(x)
         x = self.layer2(x)
         x = self.layer2(x)
-        x = self.layer2(x)
         x =self.expand2(x)
-        x = self.layer3(x)
         x = self.layer3(x)
         x = self.layer3(x)
         x = self.cnn1(x)
@@ -127,3 +123,4 @@ class myResnet(nn.Module):
         return out
 
         pass
+
